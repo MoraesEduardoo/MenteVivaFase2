@@ -58,6 +58,17 @@ export const api = {
     saveEntry(payload.data);
     return payload;
   },
+  updateEntry(id, data) {
+    return request(`/entries/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  },
+  deleteEntry(id) {
+    return request(`/entries/${id}`, {
+      method: 'DELETE',
+    });
+  },
   listEntries() {
     return request('/entries');
   },

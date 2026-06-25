@@ -11,7 +11,7 @@ import { api } from '../services/api';
 import { getEntries, setEntries } from '../services/session';
 
 const moods = ['Calmo', 'Leve', 'Tenso', 'Feliz', 'Ansioso', 'Cansado', 'Triste'];
-const tags = ['sono', 'família', 'trabalho', 'estudo', 'saúde', 'amizades'];
+const tags = ['sono', 'familia', 'trabalho', 'estudo', 'saude', 'amizades'];
 
 export default function Diario() {
   const params = useLocalSearchParams();
@@ -19,39 +19,71 @@ export default function Diario() {
   const [selectedTag, setSelectedTag] = useState('sono');
   const [note, setNote] = useState('');
   const [message, setMessage] = useState('');
+  const [editingId, setEditingId] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  useEffect(() => {
-    async function loadEntries() {
-      try {
-        const payload = await api.listEntries();
-        setEntries(payload.data || []);
-        setRefreshKey((current) => current + 1);
-      } catch (error) {
-        setMessage(error.message || 'Nao foi possivel carregar o historico.');
-      }
+  async function loadEntries() {
+    try {
+      const payload = await api.listEntries();
+      setEntries(payload.data || []);
+      setRefreshKey((current) => current + 1);
+    } catch (error) {
+      setMessage(error.message || 'Nao foi possivel carregar o historico.');
     }
+  }
 
+  useEffect(() => {
     loadEntries();
   }, []);
 
   async function saveEntry() {
     try {
-      await api.createEntry({ mood: selectedMood, tag: selectedTag, note });
-      const payload = await api.listEntries();
-      setEntries(payload.data || []);
+      if (editingId) {
+        await api.updateEntry(editingId, { mood: selectedMood, tag: selectedTag, note });
+      } else {
+        await api.createEntry({ mood: selectedMood, tag: selectedTag, note });
+      }
+
+      await loadEntries();
+      setEditingId(null);
       setNote('');
-      setMessage('Registro salvo com sucesso.');
-      setRefreshKey((current) => current + 1);
+      setMessage(editingId ? 'Registro atualizado com sucesso.' : 'Registro salvo com sucesso.');
     } catch (error) {
-      setMessage(error.message || 'Não foi possível salvar o registro.');
+      setMessage(error.message || 'Nao foi possivel salvar o registro.');
+    }
+  }
+
+  function startEdit(entry) {
+    setEditingId(entry.id);
+    setSelectedMood(moods.includes(entry.mood) ? entry.mood : 'Calmo');
+    setSelectedTag(tags.includes(entry.tag) ? entry.tag : 'sono');
+    setNote(entry.note || '');
+    setMessage('Edite o registro selecionado.');
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setSelectedMood('Calmo');
+    setSelectedTag('sono');
+    setNote('');
+    setMessage('');
+  }
+
+  async function removeEntry(entry) {
+    try {
+      await api.deleteEntry(entry.id);
+      await loadEntries();
+      if (editingId === entry.id) cancelEdit();
+      setMessage('Registro excluido com sucesso.');
+    } catch (error) {
+      setMessage(error.message || 'Nao foi possivel excluir o registro.');
     }
   }
 
   return (
     <Screen>
-      <PageHeader title="Diário" />
-      <Text style={styles.subtitle}>Escreva como você está se sentindo agora.</Text>
+      <PageHeader title="Diario" />
+      <Text style={styles.subtitle}>Escreva como voce esta se sentindo agora.</Text>
 
       <Card>
         <Text style={styles.sectionTitle}>Humor</Text>
@@ -76,7 +108,7 @@ export default function Diario() {
       </Card>
 
       <Card>
-        <Text style={styles.sectionTitle}>Anotação</Text>
+        <Text style={styles.sectionTitle}>Anotacao</Text>
         <TextInput
           multiline
           value={note}
@@ -85,18 +117,23 @@ export default function Diario() {
           style={styles.input}
           textAlignVertical="top"
         />
-        <Button onPress={saveEntry}>Salvar registro</Button>
+        <Button onPress={saveEntry}>{editingId ? 'Atualizar registro' : 'Salvar registro'}</Button>
+        {editingId ? <Button tone="soft" onPress={cancelEdit}>Cancelar edicao</Button> : null}
         {message ? <Text style={styles.message}>{message}</Text> : null}
       </Card>
 
       <Card style={styles.historyCard} key={refreshKey}>
-        <Text style={styles.sectionTitle}>Últimos registros</Text>
+        <Text style={styles.sectionTitle}>Ultimos registros</Text>
         {getEntries().length ? (
           getEntries().map((entry) => (
             <View key={entry.id} style={styles.entryItem}>
-              <Text style={styles.entryTitle}>{entry.mood} · {entry.tag}</Text>
+              <Text style={styles.entryTitle}>{entry.mood} - {entry.tag}</Text>
               <Text style={styles.entryDate}>{entry.date}</Text>
               {entry.note ? <Text style={styles.entryNote}>{entry.note}</Text> : null}
+              <View style={styles.actions}>
+                <Button tone="soft" style={styles.actionButton} onPress={() => startEdit(entry)}>Editar</Button>
+                <Button tone="red" style={styles.actionButton} onPress={() => removeEntry(entry)}>Excluir</Button>
+              </View>
             </View>
           ))
         ) : (
@@ -130,4 +167,6 @@ const styles = StyleSheet.create({
   entryTitle: { color: colors.text, fontSize: 16, fontWeight: '900' },
   entryDate: { color: colors.primaryDark, fontSize: 13, fontWeight: '900' },
   entryNote: { color: colors.muted, fontSize: 15, lineHeight: 22 },
+  actions: { flexDirection: 'row', gap: spacing.sm },
+  actionButton: { flex: 1, minHeight: 42, paddingHorizontal: spacing.md, paddingVertical: spacing.sm },
 });
