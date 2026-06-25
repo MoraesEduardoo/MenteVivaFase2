@@ -92,6 +92,9 @@ Instale as dependências:
 npm install
 ```
 
+# Observação
+Cria um arquivo ```.env```, na pasta ```backend```, e coloque as credenciais abaixo.
+
 Confira o arquivo `backend/.env`. A variável `MONGODB_URI` deve apontar para o banco `MenteViva`:
 
 ```env
@@ -130,6 +133,9 @@ Instale as dependências:
 ```bash
 npm install
 ```
+
+# Observação
+Cria um arquivo ```.env```, na pasta ```frontend```, e coloque as credenciais abaixo.
 
 Confira o arquivo `frontend/.env`. Ele deve apontar para o IP do computador onde o backend está rodando:
 
