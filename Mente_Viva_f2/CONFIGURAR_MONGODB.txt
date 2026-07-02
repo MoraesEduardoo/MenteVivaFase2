@@ -1,0 +1,34 @@
+MENTE VIVA - CONFIGURAÇÃO RÁPIDA DO MONGODB
+
+1. Abra o arquivo backend/.env
+2. Troque a linha MONGODB_URI pela sua string real do MongoDB Atlas.
+
+Exemplo:
+MONGODB_URI=mongodb+srv://usuario:senha@cluster0.xxxxx.mongodb.net/menteviva?retryWrites=true&w=majority
+
+3. No MongoDB Atlas, confirme:
+- Network Access: 0.0.0.0/0 liberado
+- Database Access: usuário e senha criados
+
+4. Rode o backend:
+cd backend
+npm install
+npm run dev
+
+5. Rode o frontend com Expo Go:
+cd frontend
+npm install
+npx expo start
+
+Se o celular nao acessar o backend, copie frontend/.env.example para frontend/.env
+e troque SEU_IP_DO_COMPUTADOR pelo IP do computador na rede Wi-Fi.
+
+COMO O LOGIN É SALVO
+
+Ao cadastrar uma conta no app, o backend salva na coleção users:
+- _id: ID automático do MongoDB
+- name: nome do usuário
+- email: e-mail/login
+- passwordHash: senha criptografada
+
+A senha real não é salva. Isso é correto e mais seguro.
