@@ -1,13 +1,5 @@
 # Mente Viva
 
-## Integrantes da equipe
-
-- Eduardo Moraes
-- Newton Chagas
-- Samuel Barreto
-- Paulo Vithor
-- Ane Dourado
-
 ## Descricao do aplicativo
 
 Mente Viva e um aplicativo mobile voltado para cuidado mental, acompanhamento emocional e treino cognitivo. O usuario pode criar uma conta, fazer login, registrar entradas no diario emocional, acessar recomendacoes de bem-estar e jogar o jogo da memoria. O desempenho do jogo da memoria e calculado a partir das tentativas, tempo e historico de partidas do usuario.
